@@ -1,0 +1,35 @@
+import { orm } from '#src/database/index.js';
+import { Institute } from './institute.entity.js';
+
+export class InstituteService {
+  private get em() {
+    return orm.em.fork();
+  }
+
+  async getAll() {
+    return this.em.findAll(Institute);
+  }
+
+  async create(data: { name: string }) {
+    const em = this.em;
+    const institute = em.create(Institute, { name: data.name });
+    await em.flush();
+    return institute;
+  }
+
+  async update(data: { guid: string; name?: string | undefined }) {
+    const em = this.em;
+    const institute = await em.findOneOrFail(Institute, { guid: data.guid });
+
+    if (data.name !== undefined) institute.name = data.name;
+
+    await em.flush();
+    return institute;
+  }
+
+  async remove(guid: string) {
+    const em = this.em;
+    const institute = await em.findOneOrFail(Institute, { guid }, { populate: ['users'] });
+    await em.remove(institute).flush();
+  }
+}
