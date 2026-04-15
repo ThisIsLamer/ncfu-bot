@@ -24,7 +24,7 @@ const createEventSchema = z.object({
   colors: z.string().max(7),
   types: z.array(z.string())
 })
-type createEventDto = z.infer<typeof createEventSchema>
+export type createEventDto = z.infer<typeof createEventSchema>
 
 const updateEventSchema = z.object({
   guid: z.string().max(36),
@@ -36,7 +36,7 @@ const updateEventSchema = z.object({
   colors: z.string().max(7).optional(),
   types: z.array(z.string()).optional()
 })
-type updateEventDto = z.infer<typeof updateEventSchema>
+export type updateEventDto = z.infer<typeof updateEventSchema>
 
 const deleteEventSchema = z.object({
   guid: z.string().max(36)

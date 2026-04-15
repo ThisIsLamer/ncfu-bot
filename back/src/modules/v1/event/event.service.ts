@@ -3,6 +3,7 @@ import { Event } from './event.entity.js';
 import { EventType } from './event-type.entity.js';
 import { EventRegistration } from './event-registration.entity.js';
 import { User } from '../user/user.entity.js';
+import type { createEventDto, updateEventDto } from './event.controller.js';
 
 export class EventService {
   private get em() {
@@ -57,15 +58,7 @@ export class EventService {
     return registration;
   }
 
-  async create(data: {
-    title: string;
-    description: string;
-    date: Date;
-    location: string;
-    capacity: number;
-    colors: string;
-    types: string[];
-  }) {
+  async create(data: createEventDto) {
     const em = this.em;
     const eventTypes = await em.find(EventType, { name: { $in: data.types } });
     const event = em.create(Event, {
@@ -81,16 +74,7 @@ export class EventService {
     return event;
   }
 
-  async update(data: {
-    guid: string;
-    title?: string | undefined;
-    description?: string | undefined;
-    date?: Date | undefined;
-    location?: string | undefined;
-    capacity?: number | undefined;
-    colors?: string | undefined;
-    types?: string[] | undefined;
-  }) {
+  async update(data: updateEventDto) {
     const em = this.em;
     const event = await em.findOneOrFail(Event, { guid: data.guid }, { populate: ['types'] });
 
