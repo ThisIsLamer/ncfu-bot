@@ -1,13 +1,12 @@
 import { Controller, Delete, Get, Post, Roles, ValidateBody } from '#src/core/decorators/index.js';
 import { FastifyRequest } from 'fastify';
 import { UserService } from './user.service.js';
-import { UserPresenter } from './user.presenter.js';
 import z from 'zod';
 
 const createUserSchema = z.object({
   firstName: z.string().max(100),
   lastName: z.string().max(100),
-  course: z.number(),
+  group: z.string().max(22),
   institute: z.string().max(36),
   role: z.string().max(16).optional(),
   avatarUrl: z.string().max(500).optional()
@@ -18,7 +17,7 @@ const updateUserSchema = z.object({
   guid: z.string().max(36),
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
-  course: z.number().optional(),
+  group: z.string().max(22).optional(),
   institute: z.string().max(36).optional(),
   role: z.string().max(16).optional(),
   avatarUrl: z.string().max(500).optional()
@@ -30,7 +29,7 @@ const removeUserSchema = z.object({
 })
 type removeUserDto = z.infer<typeof removeUserSchema>
 
-@Controller('/')
+@Controller('/users')
 export class UserController {
   private userService = new UserService();
 

@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Roles, ValidateBody } from '#src/core/decorators/index.js';
+import { Controller, Delete, Get, Post, Public, Roles, ValidateBody } from '#src/core/decorators/index.js';
 import { FastifyRequest } from 'fastify';
 import { InstituteService } from './institute.service.js';
 import { InstitutePresenter } from './institute.presenter.js';
@@ -20,11 +20,12 @@ const removeInstituteSchema = z.object({
 });
 type RemoveInstituteDto = z.infer<typeof removeInstituteSchema>;
 
-@Controller('/')
+@Controller('/institutes')
 export class InstituteController {
   private instituteService = new InstituteService();
 
   @Get('/')
+  @Public()
   async getAll() {
     const institutes = await this.instituteService.getAll();
     return InstitutePresenter.presentMany(institutes);

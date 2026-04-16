@@ -43,7 +43,7 @@ const deleteEventSchema = z.object({
 })
 type deleteEventDto = z.infer<typeof deleteEventSchema>
 
-@Controller('/')
+@Controller('/events')
 export class EventController {
   private eventService = new EventService();
 

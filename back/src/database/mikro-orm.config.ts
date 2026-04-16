@@ -10,12 +10,13 @@ import { EventType } from '#src/modules/v1/event/event-type.entity.js';
 import { EventRegistration } from '#src/modules/v1/event/event-registration.entity.js';
 import { User } from '#src/modules/v1/user/user.entity.js';
 import { Institute } from '#src/modules/v1/institute/institute.entity.js';
+import { Invite } from '#src/modules/v1/invite/invite.entity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   clientUrl: GLOBAL_CONFIG.DATABASE.SQL.URL,
-  entities: [Event, EventType, EventRegistration, User, Institute],
+  entities: [Event, EventType, EventRegistration, User, Institute, Invite],
   debug: GLOBAL_CONFIG.DATABASE.LOGGING,
   extensions: [Migrator],
   migrations: {

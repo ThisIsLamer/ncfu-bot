@@ -4,9 +4,12 @@ import { BaseEntity } from '#src/database/base.entity.js';
 import { Institute } from '../institute/institute.entity.js';
 
 @Entity()
-export class User extends BaseEntity<'guid' | 'avatarUrl' | 'theme'> {
+export class User extends BaseEntity<'guid' | 'avatarUrl' | 'theme' | 'role'> {
   @Property({ type: 'string', length: 36, unique: true, onCreate: () => randomUUID() })
   guid: string = randomUUID();
+
+  @Property({ type: 'int', unique: true })
+  xamId!: number;
 
   @Property({ type: 'string', length: 100 })
   firstName!: string;
@@ -17,8 +20,8 @@ export class User extends BaseEntity<'guid' | 'avatarUrl' | 'theme'> {
   @ManyToOne(() => Institute)
   institute!: Institute;
 
-  @Property({ type: 'tinyint' })
-  course!: number;
+  @Property({ type: 'string', length: 22 })
+  group!: string;
 
   @Property({ type: 'string', length: 16, default: 'user' })
   role!: string;

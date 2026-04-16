@@ -14,10 +14,11 @@ export class UserService {
     const user = em.create(User, {
       firstName: data.firstName,
       lastName: data.lastName,
-      course: data.course,
+      group: data.group,
       institute,
       role: data.role ?? 'user',
       avatarUrl: data.avatarUrl ?? null,
+      xamId: 0
     });
     await em.flush();
     return user;
@@ -29,7 +30,7 @@ export class UserService {
 
     if (data.firstName !== undefined) user.firstName = data.firstName;
     if (data.lastName !== undefined) user.lastName = data.lastName;
-    if (data.course !== undefined) user.course = data.course;
+    if (data.group !== undefined) user.group = data.group;
     if (data.role !== undefined) user.role = data.role;
     if (data.avatarUrl !== undefined) user.avatarUrl = data.avatarUrl;
 

@@ -5,7 +5,7 @@ export interface UserPresented {
   firstName: string;
   lastName: string;
   institute: string;
-  course: number;
+  group: string;
   role: string;
   avatarUrl: string | null;
   theme: string;
@@ -24,7 +24,7 @@ export class UserPresenter {
       firstName: user.firstName,
       lastName: user.lastName,
       institute: user.institute.guid,
-      course: user.course,
+      group: user.group,
       role: user.role,
       avatarUrl: user.avatarUrl,
       theme: user.theme,
@@ -33,7 +33,18 @@ export class UserPresenter {
     };
   }
 
+  static presentAdmin(user: User): UserPresentedAdmin {
+    return {
+      id: user.id,
+      ...UserPresenter.present(user),
+    };
+  }
+
   static presentMany(users: User[]): UserPresented[] {
     return users.map(u => UserPresenter.present(u));
+  }
+
+  static presentManyAdmin(users: User[]): UserPresentedAdmin[] {
+    return users.map(u => UserPresenter.presentAdmin(u));
   }
 }
