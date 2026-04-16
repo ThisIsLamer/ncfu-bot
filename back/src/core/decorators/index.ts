@@ -6,6 +6,7 @@ export interface RouteMetadata {
   path: string;
   handler: string;
   isPublic?: boolean;
+  isInitDataOnly?: boolean;
   roles?: string[];
   validation?: {
     body?: z.ZodType;
@@ -16,6 +17,7 @@ export interface RouteMetadata {
 
 const controllerMetadata = new WeakMap<any, string>();
 const publicMetadata = new WeakMap<any, Set<string>>();
+const initDataOnlyMetadata = new WeakMap<any, Set<string>>();
 const rolesMetadata = new WeakMap<any, string[]>();
 const validationMetadata = new WeakMap<any, Map<string, any>>();
 export const routesByClass = new Map<string, RouteMetadata[]>();
@@ -57,6 +59,14 @@ export function Public() {
   };
 }
 
+export function InitDataOnly() {
+  return function (target: any, context: ClassMethodDecoratorContext) {
+    const methods = initDataOnlyMetadata.get(target) || new Set();
+    methods.add(context.name as string);
+    initDataOnlyMetadata.set(target, methods);
+  };
+}
+
 export function Roles(...args: string[]) {
   return function (target: any, context: ClassMethodDecoratorContext) {
     const roles = rolesMetadata.get(target) || [];
@@ -70,8 +80,10 @@ function createRouteDecorator(method: string, path: string) {
     const className = 'temp';
     const routes = routesByClass.get(className) || [];
     const publicMethods = publicMetadata.get(target) || new Set();
+    const initDataOnlyMethods = initDataOnlyMetadata.get(target) || new Set();
     const validation = validationMetadata.get(target) || new Map();
     const isPublic = publicMethods.has(context.name as string);
+    const isInitDataOnly = initDataOnlyMethods.has(context.name as string);
     const methodValidation = validation.get(context.name as string);
     const roles = rolesMetadata.get(target) || [];
 
@@ -80,6 +92,7 @@ function createRouteDecorator(method: string, path: string) {
       path,
       handler: context.name as string,
       isPublic,
+      isInitDataOnly,
       roles,
       validation: methodValidation
     });

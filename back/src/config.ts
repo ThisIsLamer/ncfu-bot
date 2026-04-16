@@ -4,7 +4,8 @@ export const GLOBAL_CONFIG = {
   APP: {
     PORT: Number(process.env.APP_PORT) ?? 3000,
     HOST: process.env.APP_HOST ?? '0.0.0.0',
-    PAPER: process.env.APP_PASSWORD_PAPER ?? ''
+    PAPER: process.env.APP_PASSWORD_PAPER ?? '',
+    BOT_TOKEN: process.env.APP_BOT_TOKEN ?? ''
   },
   LLM: {
     PROVIDER: {

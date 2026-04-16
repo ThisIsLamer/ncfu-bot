@@ -2,6 +2,21 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { RouteMetadata, methods } from "../decorators/index.js";
 import { ZodError } from "zod";
 import { Rest } from "../examples.js";
+import { orm } from "#src/database/index.js";
+import { User } from "#src/modules/v1/user/user.entity.js";
+import { validateInitData } from "../validate-init-data.js";
+import { GLOBAL_CONFIG } from "#src/config.js";
+import type { IAccount } from "#root/types/custom.js";
+
+const AUTH_CACHE_TTL = 5 * 60_000;
+const authCache = new Map<string, { user: IAccount; exp: number }>();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of authCache) {
+    if (val.exp < now) authCache.delete(key);
+  }
+}, 60_000);
 
 async function routeHook(request: FastifyRequest, reply: FastifyReply) {
   let path = request.url.split('?')[0]!;
@@ -23,9 +38,59 @@ async function routeHook(request: FastifyRequest, reply: FastifyReply) {
 }
 
 async function authHook(request: FastifyRequest, reply: FastifyReply, route: RouteMetadata) {
-  const unauthError = Rest.error(request.method, 'Unauthorized', 401)
+  const unauthError = Rest.error(request.method, 'Unauthorized', 401);
 
-  return
+  if (route.isPublic) return;
+
+  const initData = request.headers.authorization;
+  if (!initData) return reply.code(401).send(unauthError);
+
+  if (!validateInitData(initData, GLOBAL_CONFIG.APP.BOT_TOKEN)) {
+    return reply.code(401).send(unauthError);
+  }
+
+  const params = new URLSearchParams(initData);
+  const userDataRaw = params.get('user');
+  if (!userDataRaw) return reply.code(401).send(unauthError);
+
+  let xamId: number;
+  try {
+    xamId = JSON.parse(userDataRaw).id;
+  } catch {
+    return reply.code(401).send(unauthError);
+  }
+
+  if (route.isInitDataOnly) {
+    request.userToken = initData;
+    return;
+  }
+
+  const cached = authCache.get(initData);
+  if (cached && cached.exp > Date.now()) {
+    request.user = cached.user;
+    request.userToken = initData;
+    return;
+  }
+
+  const em = orm.em.fork();
+  const user = await em.findOne(User, { xamId }, { populate: ['institute'] });
+  if (!user) return reply.code(401).send(unauthError);
+
+  const account: IAccount = {
+    guid: user.guid,
+    xamId: user.xamId,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    institute: user.institute.guid,
+    group: user.group,
+    role: user.role,
+    avatarUrl: user.avatarUrl,
+    theme: user.theme,
+  };
+
+  authCache.set(initData, { user: account, exp: Date.now() + AUTH_CACHE_TTL });
+  request.user = account;
+  request.userToken = initData;
 }
 
 async function rolesHook(request: FastifyRequest, reply: FastifyReply, route: RouteMetadata) {
