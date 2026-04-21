@@ -1,0 +1,7 @@
+services:
+  front:
+    build: .
+    container_name: ncfu-front
+    restart: unless-stopped
+    ports:
+      - '${FRONT_PORT:-8080}:80'

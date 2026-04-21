@@ -1,0 +1,38 @@
+services:
+  front:
+    build: ./front
+    container_name: ncfu-front
+    restart: unless-stopped
+    ports:
+      - '${FRONT_PORT:-8080}:80'
+    depends_on:
+      - back
+
+  back:
+    build: ./back
+    container_name: ncfu-back
+    restart: unless-stopped
+    ports:
+      - '${APP_PORT:-3000}:3000'
+    env_file:
+      - ./back/.env
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-ncfu
+    restart: unless-stopped
+    ports:
+      - '26670:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD:-QazWsx123}
+      MYSQL_DATABASE: ${DATABASE_NAME:-ncfu}
+    volumes:
+      - ./mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
