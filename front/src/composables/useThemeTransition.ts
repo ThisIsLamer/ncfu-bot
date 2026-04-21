@@ -22,7 +22,7 @@ export function useThemeTransition () {
 
   function applyTheme () {
     account.toggleTheme()
-    theme.global.name.value = account.user.theme === 'dark' ? 'ncfuDark' : 'ncfuLight'
+    theme.global.name.value = account.user?.theme === 'dark' ? 'ncfuDark' : 'ncfuLight'
   }
 
   function toggleTheme (event?: MouseEvent | TouchEvent) {
