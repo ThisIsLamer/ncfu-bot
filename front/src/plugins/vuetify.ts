@@ -6,6 +6,7 @@
 
 // Composables
 import { createVuetify } from 'vuetify'
+import { VDateInput } from 'vuetify/labs/VDateInput'
 // Styles
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
@@ -55,6 +56,9 @@ const ncfuDark = {
 }
 
 export default createVuetify({
+  components: {
+    VDateInput,
+  },
   theme: {
     defaultTheme: 'ncfuDark',
     themes: {

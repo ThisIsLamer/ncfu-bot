@@ -1,11 +1,44 @@
 import fastify from 'fastify';
+import cors from '@fastify/cors';
 import { registerModule } from './core/decorators/index.js';
 import { preHandler } from './core/hooks/handler.js';
+import { AppError } from './core/app-error.js';
 import { initializeDatabase, orm, RequestContext } from './database/index.js';
 import { GLOBAL_CONFIG } from './config.js';
-import { redis } from './database/redis.js';
 
 const server = fastify({ logger: true });
+
+function buildCorsOrigin(raw: string): (string | RegExp)[] {
+  return raw.split(',').map((o) => {
+    const trimmed = o.trim();
+    if (trimmed.includes('*')) {
+      const escaped = trimmed.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+      return new RegExp(`^${escaped}$`);
+    }
+    return trimmed;
+  });
+}
+
+await server.register(cors, {
+  origin: buildCorsOrigin(GLOBAL_CONFIG.APP.CORS_ORIGINS),
+  credentials: true,
+});
+
+server.setErrorHandler((error, request, reply) => {
+  if (error instanceof AppError) {
+    return reply.code(error.statusCode).send({
+      method: request.method,
+      message: error.message,
+      statusCode: error.statusCode,
+    });
+  }
+  request.log.error(error);
+  return reply.code(500).send({
+    method: request.method,
+    message: 'Внутренняя ошибка сервера',
+    statusCode: 500,
+  });
+});
 
 server.addHook('preHandler', preHandler);
 
@@ -24,7 +57,6 @@ async function loadModules() {
 const start = async () => {
   try {
     await initializeDatabase();
-    await redis.connect();
     await loadModules();
     await server.listen({ 
       port: GLOBAL_CONFIG.APP.PORT, 
@@ -43,7 +75,6 @@ async function shutdown(signal: string) {
   console.log(`\n${signal} received, shutting down gracefully...`);
   try {
     await server.close();
-    await redis.disconnect();
     await orm.close();
     console.log('Shutdown complete');
     process.exit(0);

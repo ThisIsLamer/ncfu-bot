@@ -1,6 +1,9 @@
-import { Controller, Delete, Get, Post, Roles, ValidateBody } from '#src/core/decorators/index.js';
+import { Controller, Delete, Get, InitDataOnly, Post, Roles, ValidateBody } from '#src/core/decorators/index.js';
 import { FastifyRequest } from 'fastify';
 import { UserService } from './user.service.js';
+import { UserPresenter } from './user.presenter.js';
+import { EventService } from '../event/event.service.js';
+import { Rest } from '#src/core/examples.js';
 import z from 'zod';
 
 const createUserSchema = z.object({
@@ -29,13 +32,49 @@ const removeUserSchema = z.object({
 })
 type removeUserDto = z.infer<typeof removeUserSchema>
 
+const registerSchema = z.object({
+  guid: z.string().max(36),
+});
+type RegisterDto = z.infer<typeof registerSchema>;
+
 @Controller('/users')
 export class UserController {
   private userService = new UserService();
+  private eventService = new EventService();
 
   @Get('/account')
   async getAccount(request: FastifyRequest) {
-    
+    const user = await this.userService.getByGuid(request.user.guid);
+    return UserPresenter.present(user);
+  }
+
+  @Get('/stats')
+  async getStats(request: FastifyRequest) {
+    const attended = await this.eventService.getAttendedCount(request.user.guid);
+    return { attended };
+  }
+
+  @Post('/notifications')
+  @ValidateBody(z.object({ enabled: z.boolean() }))
+  async updateNotifications(request: FastifyRequest<{ Body: { enabled: boolean } }>) {
+    return this.userService.updateNotifications(request.user.guid, request.body.enabled);
+  }
+
+  @Post('/register')
+  @InitDataOnly()
+  @ValidateBody(registerSchema)
+  async register(request: FastifyRequest<{ Body: RegisterDto }>) {
+    const xamUser = request.xamUser;
+    if (!xamUser?.id) {
+      return Rest.error(request.method, 'Некорректные данные авторизации', 400);
+    }
+
+    const user = await this.userService.register(
+      request.body.guid,
+      xamUser.id,
+      xamUser.photo_url,
+    );
+    return user;
   }
 
   @Post('/create')

@@ -3,7 +3,7 @@ import { Cascade, Collection } from '@mikro-orm/core';
 import { randomUUID } from 'crypto';
 import { BaseEntity } from '#src/database/base.entity.js';
 import { EventType } from './event-type.entity.js';
-import type { EventRegistration } from './event-registration.entity.js';
+import { EventRegistration } from './event-registration.entity.js';
 
 @Entity()
 export class Event extends BaseEntity<'guid'> {
@@ -31,6 +31,6 @@ export class Event extends BaseEntity<'guid'> {
   @ManyToMany({ entity: () => EventType })
   types = new Collection<EventType>(this);
 
-  @OneToMany('EventRegistration', 'event', { cascade: [Cascade.REMOVE], orphanRemoval: true })
+  @OneToMany(() => EventRegistration, (r) => r.event, { cascade: [Cascade.REMOVE], orphanRemoval: true })
   registrations = new Collection<EventRegistration>(this);
 }

@@ -1,46 +1,58 @@
+import type { UserResponse } from '@/api/types'
 import { defineStore } from 'pinia'
+import { isApiError, usersApi } from '@/api'
 
 export type UserRole = 'student' | 'organizer' | 'admin'
-export type ThemeMode = 'light' | 'dark'
-
-export interface UserAccount {
-  id: string
-  firstName: string
-  lastName: string
-  institute: string
-  course: number | null
-  role: UserRole
-  avatarUrl: string | null
-  theme: ThemeMode
-}
+export type AuthState = 'loading' | 'authenticated' | 'not-registered' | 'error'
 
 export const useAccountStore = defineStore('account', {
-  state: (): { user: UserAccount } => ({
-    user: {
-      id: 'user-001',
-      firstName: 'Иван',
-      lastName: 'Иванов',
-      institute: 'Институт информационных технологий',
-      course: 3,
-      role: 'student',
-      avatarUrl: null,
-      theme: 'dark',
-    },
+  state: (): { user: UserResponse | null, authState: AuthState } => ({
+    user: null,
+    authState: 'loading',
   }),
 
   getters: {
-    fullName: state => `${state.user.firstName} ${state.user.lastName}`,
-    isStudent: state => state.user.role === 'student',
-    isOrganizer: state => state.user.role === 'organizer',
-    isAdmin: state => state.user.role === 'admin',
+    fullName: state => state.user ? `${state.user.firstName} ${state.user.lastName}` : '',
+    isStudent: state => state.user?.role === 'user' || state.user?.role === 'student',
+    isOrganizer: state => state.user?.role === 'organizer',
+    isAdmin: state => state.user?.role === 'admin',
+    isAuthenticated: state => state.authState === 'authenticated',
+    isNotRegistered: state => state.authState === 'not-registered',
   },
 
   actions: {
-    setRole (role: UserRole) {
-      this.user.role = role
+    async fetchAccount () {
+      this.authState = 'loading'
+      const result = await usersApi.getAccount()
+
+      if (isApiError(result)) {
+        this.authState = result.response?.status === 401 ? 'not-registered' : 'error'
+        return
+      }
+
+      this.user = result.data
+      this.authState = 'authenticated'
     },
+
+    async register (guid: string) {
+      const result = await usersApi.register({ guid })
+      if (isApiError(result)) {
+        return false
+      }
+      await this.fetchAccount()
+      return this.authState === 'authenticated'
+    },
+
+    setRole (role: UserRole) {
+      if (this.user) {
+        this.user.role = role
+      }
+    },
+
     toggleTheme () {
-      this.user.theme = this.user.theme === 'dark' ? 'light' : 'dark'
+      if (this.user) {
+        this.user.theme = this.user.theme === 'dark' ? 'light' : 'dark'
+      }
     },
   },
 })

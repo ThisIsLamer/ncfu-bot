@@ -1,5 +1,6 @@
 import { orm } from '#src/database/index.js';
 import { Institute } from './institute.entity.js';
+import { User } from '../user/user.entity.js';
 
 export class InstituteService {
   private get em() {
@@ -8,6 +9,17 @@ export class InstituteService {
 
   async getAll() {
     return this.em.findAll(Institute);
+  }
+
+  async getUsers(guid: string, limit: number, offset: number) {
+    const em = this.em;
+    const institute = await em.findOneOrFail(Institute, { guid });
+    const [users, total] = await em.findAndCount(
+      User,
+      { institute },
+      { limit, offset, orderBy: { id: 'ASC' } },
+    );
+    return { users, total };
   }
 
   async create(data: { name: string }) {

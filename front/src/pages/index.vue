@@ -16,7 +16,7 @@
     <!-- Фильтры -->
     <v-chip-group v-model="selectedFilter" class="mb-2 flex-shrink-0" mandatory>
       <v-chip
-        v-for="f in filters"
+        v-for="f in filterNames"
         :key="f"
         filter
         size="small"
@@ -26,22 +26,58 @@
       </v-chip>
     </v-chip-group>
 
+    <!-- Загрузка -->
+    <div
+      v-if="loading"
+      class="d-flex justify-center py-8"
+    >
+      <v-progress-circular indeterminate />
+    </div>
+
+    <!-- Пустое состояние -->
+    <div
+      v-else-if="filteredEvents.length === 0"
+      class="d-flex flex-column align-center justify-center flex-grow-1"
+    >
+      <v-icon
+        class="mb-3"
+        color="grey"
+        size="72"
+      >
+        mdi-calendar-blank-outline
+      </v-icon>
+      <div class="text-h6 text-medium-emphasis mb-1">Мероприятий пока нет</div>
+      <div class="text-body-2 text-medium-emphasis">Загляните позже</div>
+    </div>
+
     <!-- Карточки мероприятий -->
-    <div class="events-scroll">
+    <div
+      v-else
+      class="events-scroll"
+    >
       <v-card
-        v-for="event in events"
-        :key="event.id"
+        v-for="event in filteredEvents"
+        :key="event.guid"
         class="mb-3"
         rounded="lg"
+        style="cursor: pointer"
         variant="elevated"
+        @click="$router.push(`/events/${event.guid}`)"
       >
         <!-- Баннер -->
         <div
           class="event-banner d-flex align-end pa-3"
-          :style="{ background: event.gradient }"
+          :style="{ background: event.color }"
         >
-          <v-chip class="font-weight-medium" color="white" size="x-small" variant="flat">
-            {{ event.type }}
+          <v-chip
+            v-for="t in event.types"
+            :key="t"
+            class="font-weight-medium mr-1"
+            color="white"
+            size="x-small"
+            variant="flat"
+          >
+            {{ t }}
           </v-chip>
         </div>
 
@@ -50,7 +86,7 @@
 
           <div class="d-flex align-center text-body-2 text-medium-emphasis mb-1">
             <v-icon class="mr-1" size="16">mdi-calendar</v-icon>
-            {{ event.date }}
+            {{ formatDate(event.date) }}
           </div>
 
           <div class="d-flex align-center text-body-2 text-medium-emphasis mb-1">
@@ -81,16 +117,6 @@
           >
             {{ event.registered >= event.capacity ? 'Мест нет' : 'Есть места' }}
           </v-chip>
-          <v-spacer />
-          <v-btn
-            append-icon="mdi-arrow-right"
-            color="primary"
-            :disabled="event.registered >= event.capacity"
-            size="small"
-            variant="tonal"
-          >
-            Подробнее
-          </v-btn>
         </v-card-actions>
       </v-card>
     </div>
@@ -98,54 +124,62 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
+  import type { EventResponse, EventTypeResponse } from '@/api/types'
+  import { computed, onMounted, ref } from 'vue'
+  import { eventsApi, isApiError } from '@/api'
+  import { formatDate } from '@/utils/date'
 
   const search = ref('')
-  const filters = ['Все', 'Лекции', 'Спорт', 'Хакатоны', 'Концерты']
   const selectedFilter = ref(0)
+  const loading = ref(false)
 
-  const events = ref([
-    {
-      id: '1',
-      title: 'Хакатон по искусственному интеллекту',
-      type: 'Хакатон',
-      date: '15 апреля 2026, 14:00',
-      location: 'Корпус 1, ауд. 305',
-      registered: 45,
-      capacity: 100,
-      gradient: 'linear-gradient(135deg, #1B3A5C 0%, #3A6EA5 100%)',
-    },
-    {
-      id: '2',
-      title: 'Лекция: Квантовые вычисления',
-      type: 'Лекция',
-      date: '18 апреля 2026, 10:00',
-      location: 'Корпус 3, ауд. 210',
-      registered: 120,
-      capacity: 150,
-      gradient: 'linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%)',
-    },
-    {
-      id: '3',
-      title: 'Турнир по волейболу',
-      type: 'Спорт',
-      date: '20 апреля 2026, 16:00',
-      location: 'Спортивный комплекс СКФУ',
-      registered: 32,
-      capacity: 32,
-      gradient: 'linear-gradient(135deg, #E65100 0%, #FF9800 100%)',
-    },
-    {
-      id: '4',
-      title: 'Весенний концерт студенческих коллективов',
-      type: 'Концерт',
-      date: '25 апреля 2026, 18:30',
-      location: 'Актовый зал, Корпус 1',
-      registered: 180,
-      capacity: 300,
-      gradient: 'linear-gradient(135deg, #6A1B9A 0%, #AB47BC 100%)',
-    },
-  ])
+  const allEvents = ref<EventResponse[]>([])
+  const eventTypes = ref<EventTypeResponse[]>([])
+
+  const filterNames = computed(() => ['Все', ...eventTypes.value.map(t => t.name)])
+
+  const filteredEvents = computed(() => {
+    let result = allEvents.value
+
+    // Фильтр по типу
+    if (selectedFilter.value > 0) {
+      const typeName = filterNames.value[selectedFilter.value]
+      result = result.filter(e => e.types.includes(typeName))
+    }
+
+    // Поиск по названию и описанию
+    const q = search.value.trim().toLowerCase()
+    if (q) {
+      result = result.filter(e =>
+        e.title.toLowerCase().includes(q)
+        || e.description.toLowerCase().includes(q)
+        || e.location.toLowerCase().includes(q),
+      )
+    }
+
+    return result
+  })
+
+  async function fetchData () {
+    loading.value = true
+
+    const [eventsResult, typesResult] = await Promise.all([
+      eventsApi.getAll(),
+      eventsApi.getTypes(),
+    ])
+
+    loading.value = false
+
+    if (!isApiError(eventsResult)) {
+      allEvents.value = eventsResult.data
+    }
+
+    if (!isApiError(typesResult)) {
+      eventTypes.value = typesResult.data
+    }
+  }
+
+  onMounted(fetchData)
 </script>
 
 <style scoped>

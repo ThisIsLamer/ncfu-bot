@@ -4,7 +4,7 @@ import { BaseEntity } from '#src/database/base.entity.js';
 import { Institute } from '../institute/institute.entity.js';
 
 @Entity()
-export class User extends BaseEntity<'guid' | 'avatarUrl' | 'theme' | 'role'> {
+export class User extends BaseEntity<'guid' | 'avatarUrl' | 'theme' | 'role' | 'notifications'> {
   @Property({ type: 'string', length: 36, unique: true, onCreate: () => randomUUID() })
   guid: string = randomUUID();
 
@@ -31,4 +31,7 @@ export class User extends BaseEntity<'guid' | 'avatarUrl' | 'theme' | 'role'> {
 
   @Property({ type: 'string', length: 8, default: 'dark' })
   theme: string = 'dark';
+
+  @Property({ type: 'boolean', default: true })
+  notifications: boolean = true;
 }

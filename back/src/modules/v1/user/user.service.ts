@@ -1,11 +1,44 @@
 import { orm } from '#src/database/index.js';
 import { User } from './user.entity.js';
 import { Institute } from '../institute/institute.entity.js';
+import { AppError } from '#src/core/app-error.js';
 import type { createUserDto, updateUserDto } from './user.controller.js';
 
 export class UserService {
   private get em() {
     return orm.em.fork();
+  }
+
+  async getByGuid(guid: string) {
+    return this.em.findOneOrFail(User, { guid }, { populate: ['institute'] });
+  }
+
+  async updateNotifications(guid: string, enabled: boolean) {
+    const em = this.em;
+    const user = await em.findOneOrFail(User, { guid });
+    user.notifications = enabled;
+    await em.flush();
+    return { notifications: user.notifications };
+  }
+
+  async register(guid: string, xamId: number, avatarUrl?: string) {
+    const em = this.em;
+    const user = await em.findOneOrFail(User, { guid });
+
+    if (user.xamId !== 0) {
+      throw new AppError(409, 'Пользователь уже зарегистрирован');
+    }
+
+    const existing = await em.findOne(User, { xamId });
+    if (existing) {
+      throw new AppError(409, 'Этот Telegram-аккаунт уже привязан к другому пользователю');
+    }
+
+    user.xamId = xamId;
+    if (avatarUrl) user.avatarUrl = avatarUrl;
+
+    await em.flush();
+    return user;
   }
 
   async create(data: createUserDto) {

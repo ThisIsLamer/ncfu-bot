@@ -6,7 +6,7 @@ import { User } from '../user/user.entity.js';
 
 @Entity()
 @Unique({ properties: ['event', 'user'] })
-export class EventRegistration extends BaseEntity<'guid'> {
+export class EventRegistration extends BaseEntity<'guid' | 'attended'> {
   @Property({ type: 'string', length: 36, unique: true, onCreate: () => randomUUID() })
   guid: string = randomUUID();
 
@@ -15,4 +15,7 @@ export class EventRegistration extends BaseEntity<'guid'> {
 
   @ManyToOne(() => User)
   user!: User;
+
+  @Property({ type: 'boolean', default: false })
+  attended: boolean = false;
 }

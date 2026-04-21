@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Public, Roles, ValidateBody } from '#src/core/decorators/index.js';
+import { Controller, Delete, Get, Post, Public, Roles, ValidateBody, ValidateQuery } from '#src/core/decorators/index.js';
 import { FastifyRequest } from 'fastify';
 import { InstituteService } from './institute.service.js';
 import { InstitutePresenter } from './institute.presenter.js';
@@ -20,6 +20,13 @@ const removeInstituteSchema = z.object({
 });
 type RemoveInstituteDto = z.infer<typeof removeInstituteSchema>;
 
+const getUsersQuerySchema = z.object({
+  guid: z.string().max(36),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+type GetUsersQuery = z.infer<typeof getUsersQuerySchema>;
+
 @Controller('/institutes')
 export class InstituteController {
   private instituteService = new InstituteService();
@@ -29,6 +36,15 @@ export class InstituteController {
   async getAll() {
     const institutes = await this.instituteService.getAll();
     return InstitutePresenter.presentMany(institutes);
+  }
+
+  @Get('/users')
+  @Roles('admin')
+  @ValidateQuery(getUsersQuerySchema)
+  async getUsers(request: FastifyRequest<{ Querystring: GetUsersQuery }>) {
+    const { guid, limit, offset } = request.query;
+    const { users, total } = await this.instituteService.getUsers(guid, limit, offset);
+    return { users, total, limit, offset };
   }
 
   @Post('/create')

@@ -4,7 +4,7 @@
       <v-app-bar-title>{{ pageTitle }}</v-app-bar-title>
       <template #append>
         <v-btn icon size="small" @click="toggleTheme($event)">
-          <v-icon>{{ account.user.theme === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+          <v-icon>{{ account.user?.theme === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
         </v-btn>
         <v-menu>
           <template #activator="{ props }">
@@ -16,7 +16,7 @@
             <v-list-item
               v-for="r in roles"
               :key="r.value"
-              :active="account.user.role === r.value"
+              :active="account.user?.role === r.value"
               @click="account.setRole(r.value)"
             >
               <template #prepend>
@@ -49,7 +49,7 @@
 
 <script lang="ts" setup>
   import type { UserRole } from '@/stores/account'
-  import { computed, ref, useTemplateRef, watch } from 'vue'
+  import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   // import { useSwipe } from '@/composables/useSwipe'
   import { useThemeTransition } from '@/composables/useThemeTransition'
@@ -60,6 +60,10 @@
   const router = useRouter()
   const route = useRoute()
   const mainRef = useTemplateRef('mainRef')
+
+  onMounted(() => {
+    // account загружается в App.vue
+  })
 
   const roles: { value: UserRole, label: string, icon: string }[] = [
     { value: 'student', label: 'Студент', icon: 'mdi-school' },
@@ -74,7 +78,7 @@
   ]
 
   const organizerTabs = [
-    { value: 'events', label: 'События', icon: 'mdi-calendar-edit', to: '/organizer' },
+    { value: 'events', label: 'События', icon: 'mdi-calendar-edit', to: '/organizer/events' },
     { value: 'scanner', label: 'Сканер', icon: 'mdi-qrcode-scan', to: '/organizer/scanner' },
     { value: 'reports', label: 'Отчёты', icon: 'mdi-chart-bar', to: '/organizer/reports' },
     { value: 'profile', label: 'Профиль', icon: 'mdi-account', to: '/profile' },
@@ -96,7 +100,7 @@
   const activeTab = ref('events')
 
   const roleIcon = computed(() => {
-    return roles.find(r => r.value === account.user.role)?.icon ?? 'mdi-account'
+    return roles.find(r => r.value === account.user?.role)?.icon ?? 'mdi-account'
   })
 
   const pageTitle = computed(() => {

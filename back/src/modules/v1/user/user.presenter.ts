@@ -9,6 +9,7 @@ export interface UserPresented {
   role: string;
   avatarUrl: string | null;
   theme: string;
+  notifications: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,7 @@ export class UserPresenter {
       role: user.role,
       avatarUrl: user.avatarUrl,
       theme: user.theme,
+      notifications: user.notifications,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

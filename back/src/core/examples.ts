@@ -1,5 +1,3 @@
-import { redis } from "#src/database/redis.js";
-
 export class Rest {
   static error(
     method: string,
@@ -55,43 +53,5 @@ export class jsonRPC {
       service: 'aiprovider',
       error: { code, message, ...(data && { data }) },
     };
-  }
-}
-
-export class BaseService {
-  async publish(userGuid: string, body: Record<string, any>): Promise<boolean> {
-    const message = JSON.stringify({
-      type: 'event',
-      body
-    })
-
-    const client = redis.getConnection()
-    if (!client) return false
-    await client.publish('/event/all/account/guid/' + userGuid, message)
-    return true
-  }
-
-  async publishAll(body: Record<string, any>): Promise<boolean> {
-    const message = JSON.stringify({
-      type: 'event',
-      body
-    })
-
-    const client = redis.getConnection()
-    if (!client) return false
-    await client.publish('/event/all/all', message)
-    return true
-  }
-
-  async publishRole(role: string, body: Record<string, any>): Promise<boolean> {
-    const message = JSON.stringify({
-      type: 'event',
-      body
-    })
-
-    const client = redis.getConnection()
-    if (!client) return false
-    await client.publish('/event/all/account/role/' + role, message)
-    return true
   }
 }
