@@ -82,7 +82,7 @@ export abstract class BaseEntity<Optional extends string = never> {
 
 ## Institute
 
-Институт СКФУ. Содержит пользователей.
+Институт университета СКФУ. Содержит пользователей.
 
 **Таблица**: `institute`
 

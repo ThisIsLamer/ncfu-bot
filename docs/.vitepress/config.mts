@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'NCFU Events',
-  description: 'Веб-приложение для мессенджера MAX — учёт мероприятий и посещаемости институтов СКФУ',
+  description: 'Веб-приложение для мессенджера MAX — учёт мероприятий и посещаемости в СКФУ',
 
   markdown: {
     theme: {
