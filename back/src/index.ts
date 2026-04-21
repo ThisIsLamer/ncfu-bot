@@ -20,7 +20,7 @@ function buildCorsOrigin(raw: string): (string | RegExp)[] {
 }
 
 await server.register(cors, {
-  origin: buildCorsOrigin(GLOBAL_CONFIG.APP.CORS_ORIGINS),
+  origin: true,
   credentials: true,
 });
 
