@@ -1,4 +1,11 @@
 services:
+  docs:
+    build: ./docs
+    container_name: ncfu-docs
+    restart: unless-stopped
+    ports:
+      - '${DOCS_PORT:-8081}:80'
+
   front:
     build: ./front
     container_name: ncfu-front
