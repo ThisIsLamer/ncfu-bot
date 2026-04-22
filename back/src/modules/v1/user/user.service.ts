@@ -25,7 +25,7 @@ export class UserService {
     const em = this.em;
     const user = await em.findOneOrFail(User, { guid });
 
-    if (user.xamId !== 0) {
+    if (user.xamId !== null) {
       throw new AppError(409, 'Пользователь уже зарегистрирован');
     }
 
@@ -51,7 +51,7 @@ export class UserService {
       institute,
       role: data.role ?? 'user',
       avatarUrl: data.avatarUrl ?? null,
-      xamId: 0
+      xamId: null
     });
     await em.flush();
     return user;

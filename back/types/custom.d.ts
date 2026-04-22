@@ -2,7 +2,7 @@ import 'fastify';
 
 export interface IAccount {
   guid: string;
-  xamId: number;
+  xamId: number | null;
   firstName: string;
   lastName: string;
   institute: string;

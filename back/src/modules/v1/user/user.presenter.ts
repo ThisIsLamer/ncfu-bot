@@ -10,7 +10,7 @@ export interface UserPresented {
   avatarUrl: string | null;
   theme: string;
   notifications: boolean;
-  xamId: number;
+  xamId: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
