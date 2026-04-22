@@ -16,8 +16,7 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(config => {
-  // const token = window.WebApp?.initData || '11111'
-  const token = '11111'
+  const token = window.WebApp?.initData || ''
   if (token) {
     config.headers.Authorization = token
   }

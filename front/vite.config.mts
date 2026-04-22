@@ -1,9 +1,9 @@
-import VueRouter from 'vue-router/vite';
 import { fileURLToPath, URL } from 'node:url'
 import Vue from '@vitejs/plugin-vue'
 import Fonts from 'unplugin-fonts/vite'
 import { defineConfig } from 'vite'
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import VueRouter from 'vue-router/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -42,6 +42,8 @@ export default defineConfig({
     ],
   },
   server: {
-    port: 3000,
+    port: 3010,
+    host: '0.0.0.0',
+    allowedHosts: ['ncfu.lmrsc.su', 'localhost'],
   },
 })

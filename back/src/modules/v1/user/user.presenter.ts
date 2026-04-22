@@ -10,6 +10,7 @@ export interface UserPresented {
   avatarUrl: string | null;
   theme: string;
   notifications: boolean;
+  xamId: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +31,7 @@ export class UserPresenter {
       avatarUrl: user.avatarUrl,
       theme: user.theme,
       notifications: user.notifications,
+      xamId: user.xamId,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

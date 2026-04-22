@@ -17,7 +17,7 @@ export class InstituteService {
     const [users, total] = await em.findAndCount(
       User,
       { institute },
-      { limit, offset, orderBy: { id: 'ASC' } },
+      { limit, offset, orderBy: { id: 'ASC' }, populate: ['institute'] },
     );
     return { users, total };
   }

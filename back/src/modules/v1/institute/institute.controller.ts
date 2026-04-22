@@ -2,6 +2,7 @@ import { Controller, Delete, Get, Post, Public, Roles, ValidateBody, ValidateQue
 import { FastifyRequest } from 'fastify';
 import { InstituteService } from './institute.service.js';
 import { InstitutePresenter } from './institute.presenter.js';
+import { UserPresenter } from '../user/user.presenter.js';
 import z from 'zod';
 
 const createInstituteSchema = z.object({
@@ -44,7 +45,7 @@ export class InstituteController {
   async getUsers(request: FastifyRequest<{ Querystring: GetUsersQuery }>) {
     const { guid, limit, offset } = request.query;
     const { users, total } = await this.instituteService.getUsers(guid, limit, offset);
-    return { users, total, limit, offset };
+    return { users: UserPresenter.presentMany(users), total, limit, offset };
   }
 
   @Post('/create')

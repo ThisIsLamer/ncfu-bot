@@ -45,6 +45,8 @@ async function authHook(request: FastifyRequest, reply: FastifyReply, route: Rou
   const initData = request.headers.authorization;
   if (!initData) return reply.code(401).send(unauthError);
 
+  console.log(initData)
+
   if (initData === '11111') {
     const em = orm.em.fork();
     const user = await em.findOne(User, { xamId: 11111 }, { populate: ['institute'] });
@@ -67,6 +69,7 @@ async function authHook(request: FastifyRequest, reply: FastifyReply, route: Rou
   }
 
   if (!validateInitData(initData, GLOBAL_CONFIG.APP.BOT_TOKEN)) {
+    console.log(222222222)
     return reply.code(401).send(unauthError);
   }
 
