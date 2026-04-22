@@ -38,14 +38,13 @@ async function routeHook(request: FastifyRequest, reply: FastifyReply) {
 }
 
 async function authHook(request: FastifyRequest, reply: FastifyReply, route: RouteMetadata) {
+  console.log('new auth')
   const unauthError = Rest.error(request.method, 'Не авторизован', 401);
 
   if (route.isPublic) return;
 
   const initData = request.headers.authorization;
   if (!initData) return reply.code(401).send(unauthError);
-
-  console.log(initData)
 
   if (initData === '11111') {
     const em = orm.em.fork();
@@ -69,7 +68,6 @@ async function authHook(request: FastifyRequest, reply: FastifyReply, route: Rou
   }
 
   if (!validateInitData(initData, GLOBAL_CONFIG.APP.BOT_TOKEN)) {
-    console.log(222222222)
     return reply.code(401).send(unauthError);
   }
 
