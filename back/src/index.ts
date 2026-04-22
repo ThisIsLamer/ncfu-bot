@@ -58,6 +58,10 @@ const start = async () => {
   try {
     await initializeDatabase();
     await loadModules();
+
+    const { startBot } = await import('./bot/index.js');
+    await startBot();
+
     await server.listen({ 
       port: GLOBAL_CONFIG.APP.PORT, 
       host: GLOBAL_CONFIG.APP.HOST 

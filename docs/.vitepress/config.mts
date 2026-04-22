@@ -26,7 +26,16 @@ export default defineConfig({
             { text: 'Начало работы', link: '/guide/getting-started' },
             { text: 'Архитектура', link: '/guide/architecture' },
             { text: 'Модели данных', link: '/guide/models' },
+            { text: 'Бот MAX', link: '/guide/bot' },
             { text: 'Развертывание', link: '/guide/deployment' },
+          ],
+        },
+        {
+          text: 'Пользовательский интерфейс',
+          items: [
+            { text: 'Администратор', link: '/guide/ui-admin' },
+            { text: 'Организатор', link: '/guide/ui-organizer' },
+            { text: 'Студент', link: '/guide/ui-student' },
           ],
         },
       ],

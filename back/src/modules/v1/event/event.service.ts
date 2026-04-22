@@ -4,6 +4,7 @@ import { EventType } from './event-type.entity.js';
 import { EventRegistration } from './event-registration.entity.js';
 import { User } from '../user/user.entity.js';
 import { AppError } from '#src/core/app-error.js';
+import { getScheduler } from '#src/bot/index.js';
 import type { createEventDto, updateEventDto } from './event.controller.js';
 
 export class EventService {
@@ -146,6 +147,12 @@ export class EventService {
     }
 
     await em.flush();
+
+    const scheduler = getScheduler();
+    if (scheduler) {
+      await scheduler.sendEventUpdate(event.guid);
+    }
+
     return event;
   }
 

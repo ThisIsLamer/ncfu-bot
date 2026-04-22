@@ -6,7 +6,7 @@
         <v-btn icon size="small" @click="toggleTheme($event)">
           <v-icon>{{ account.user?.theme === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
         </v-btn>
-        <v-menu>
+        <v-menu v-if="account.user?.role === 'admin'">
           <template #activator="{ props }">
             <v-btn icon v-bind="props" size="small">
               <v-icon>{{ roleIcon }}</v-icon>
