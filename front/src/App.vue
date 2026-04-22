@@ -165,14 +165,21 @@
   async function scanAndRegister () {
     registerError.value = ''
 
-    if (!window.WebApp?.openCodeReader) {
-      registerError.value = 'QR-сканер недоступен вне приложения'
+    if (!window.WebApp) {
+      registerError.value = 'WebApp SDK не загружен. Откройте приложение через мессенджер MAX.'
+      return
+    }
+
+    if (!window.WebApp.openCodeReader) {
+      registerError.value = `QR-сканер недоступен (платформа: ${window.WebApp.platform || 'unknown'})`
       return
     }
 
     registering.value = true
     try {
-      const { value } = await window.WebApp.openCodeReader()
+      const result = await window.WebApp.openCodeReader()
+      const value = result?.value
+
       if (!value) {
         registering.value = false
         return
@@ -184,9 +191,9 @@
       if (!success) {
         registerError.value = 'Не удалось завершить регистрацию. Проверьте QR-код.'
       }
-    } catch {
+    } catch (error: any) {
       registering.value = false
-      registerError.value = 'Сканирование отменено'
+      registerError.value = `Ошибка сканирования: ${error?.message || error?.error?.code || 'отменено'}`
     }
   }
 </script>
