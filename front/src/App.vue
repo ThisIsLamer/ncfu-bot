@@ -35,6 +35,7 @@
         >
           Сканировать QR-код
         </v-btn>
+        <div class="mt-4">Ваш идентификатор: {{ xamId }}</div>
         <v-alert
           v-if="registerError"
           class="mt-4 w-100"
@@ -129,6 +130,8 @@
   const registerError = ref('')
   const showLoader = ref(true)
   const minLoaderDone = ref(false)
+
+  const xamId = window?.WebApp?.initDataUnsafe?.user?.id ?? '1111'
 
   const MIN_LOADER_MS = 2200
 
