@@ -131,7 +131,7 @@
   const showLoader = ref(true)
   const minLoaderDone = ref(false)
 
-  const xamId = window?.WebApp?.initDataUnsafe?.user?.id ?? '1111'
+  const xamId = window?.WebApp?.initDataUnsafe?.user?.id ?? 'Отсутствует'
 
   const MIN_LOADER_MS = 2200
 
